@@ -19,9 +19,10 @@ class ViewController: UIViewController {
         let leftImage = #imageLiteral(resourceName: "before_image")
         let rightImage = #imageLiteral(resourceName: "after_image")
         
-        let size = CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width * (leftImage.size.height / leftImage.size.width))
+        let size = CGSize(width: 411.0 * (leftImage.size.width / leftImage.size.height), height: 411.0)
         _ = sideBySideView.setImage(left: leftImage, right: rightImage, displaySize: size)
         
+        sideBySideView.minimumHeight = 200.0
     }
 
 
