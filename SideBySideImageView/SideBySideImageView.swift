@@ -22,9 +22,28 @@ class SideBySideImageView: UIView {
     private var handleBottomContraint: NSLayoutConstraint!
     
     private var initialDisplaySize: CGSize = .zero
-    private var initialContentOffset: CGPoint = .zero
     
+    /// if this property is false, the view calculates the minimum height of a visible area automatically when the handle is moved for shrinking images.
+    /// if the property is true, `minimumHeight` become available with this purpose. Default value is false.
+    var enableMinimumHeight: Bool = false
+    
+    /// This is only used when `enableMinimumHeight` is true.
     var minimumHeight: CGFloat = 0.0
+    
+    /// The image which is assigned to the left side of the view.
+    var leftImage: UIImage? {
+        return leftImageView.image
+    }
+    
+    /// The image which is assigned to the right side of the view.
+    var rightImage: UIImage? {
+        return rightImageView.image
+    }
+    
+    /// This property returns the size which has been passed to `setImage(left:right:displaySize:resetPosition)` as parameter named `displaySize`.
+    var originImageSize: CGSize {
+        return initialDisplaySize
+    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -36,29 +55,36 @@ class SideBySideImageView: UIView {
         initControls()
     }
     
-    func setImage(left: UIImage, right: UIImage, displaySize: CGSize) -> Bool {
+    func setImage(left: UIImage, right: UIImage, displaySize: CGSize, resetPosition: Bool) -> Bool {
         if left.size.equalTo(right.size) == false {
             return false
         }
         
         layoutIfNeeded()
         
+        let isFirstTime = leftImageView.image == nil
         let scrollViewSize = leftScrollView.frame.size
-        
         initialDisplaySize = displaySize
-        initialContentOffset = CGPoint(x: (displaySize.width - scrollViewSize.width) / 2.0, y: (displaySize.height - scrollViewSize.height) / 2.0)
         
         leftImageView.image = left
-        leftImageView.frame = CGRect(origin: .zero, size: displaySize)
         rightImageView.image = right
-        rightImageView.frame = CGRect(origin: .zero, size: displaySize)
         
-        leftScrollView.contentSize = self.initialDisplaySize
-        leftScrollView.contentOffset = self.initialContentOffset
-        rightScrollView.contentSize = self.initialDisplaySize
-        rightScrollView.contentOffset = self.initialContentOffset
+        if resetPosition || isFirstTime {
+            let contentOffset = CGPoint(x: (displaySize.width - scrollViewSize.width) / 2.0, y: (displaySize.height - scrollViewSize.height) / 2.0)
+            leftScrollView.zoomScale = 1.0
+            leftScrollView.contentOffset = contentOffset
+            rightScrollView.zoomScale = 1.0
+            rightScrollView.contentOffset = contentOffset
+        }
+        
+        let contentSize = displaySize.applying(CGAffineTransform(scaleX: leftScrollView.zoomScale, y: leftScrollView.zoomScale))
+        
+        leftScrollView.contentSize = contentSize
+        rightScrollView.contentSize = contentSize
 
-        
+        leftImageView.frame = CGRect(origin: .zero, size: contentSize)
+        rightImageView.frame = CGRect(origin: .zero, size: contentSize)
+
         return true
     }
     
@@ -75,14 +101,12 @@ class SideBySideImageView: UIView {
         leftScrollView.addSubview(leftImageView)
         rightScrollView.addSubview(rightImageView)
         
-//        leftScrollView.bounces = false
         leftScrollView.bouncesZoom = false
         leftScrollView.maximumZoomScale = 3.0
         leftScrollView.showsVerticalScrollIndicator = false
         leftScrollView.showsHorizontalScrollIndicator = false
         leftScrollView.delegate = self
         
-//        rightScrollView.bounces = false
         rightScrollView.bouncesZoom = false
         rightScrollView.maximumZoomScale = 3.0
         rightScrollView.showsVerticalScrollIndicator = false
@@ -133,38 +157,35 @@ class SideBySideImageView: UIView {
     @objc func handlePanGesture(recognizer: UIPanGestureRecognizer) {
         switch recognizer.state {
         case .changed:
-            let translation = recognizer.translation(in: self)
-            let constant = handleBottomContraint.constant + translation.y
-            let limit = self.frame.height - minimumHeight - handleBaseView.frame.height
+            let delta = recognizer.translation(in: self)
+            let minimumHeight = enableMinimumHeight ? self.minimumHeight : leftScrollView.frame.size.width * (initialDisplaySize.height / initialDisplaySize.width)
+            let minimumSpace = self.frame.height - minimumHeight - handleBaseView.frame.height
+            let bottomSpace = -(handleBottomContraint.constant + delta.y)
             
-            let zoomedInitialSize = initialDisplaySize.applying(CGAffineTransform(scaleX: leftScrollView.zoomScale, y: leftScrollView.zoomScale))
+            var contentSize: CGSize = leftScrollView.contentSize
+            var contentOffset: CGPoint = leftScrollView.contentOffset
+            var shrinkRatio: CGFloat = 1.0
             
-            var contentSize: CGSize = .zero
-            var contentOffset: CGPoint = .zero
-            
-            if constant >= -limit && constant <= 0 {
-                let shrinkRatio = (leftImageView.frame.size.height + translation.y) / leftImageView.frame.size.height
-                let transform = CGAffineTransform(scaleX: shrinkRatio, y: shrinkRatio)
-                contentSize = leftScrollView.contentSize.applying(transform)
-                contentOffset = leftScrollView.contentOffset.applying(transform)
-                print("contentSize = \(contentSize)")
-                handleBottomContraint.constant = constant
+            if bottomSpace <= minimumSpace && bottomSpace >= 0 {
+                shrinkRatio = (leftScrollView.bounds.height + delta.y) / leftScrollView.bounds.height
+                handleBottomContraint.constant = -(bottomSpace)
+                //
+                // the following code makes `translation` value be delta.
+                //
                 recognizer.setTranslation(.zero, in: self)
-            } else if constant < -limit {
-                let shrinkRatio = (zoomedInitialSize.height - limit) / leftImageView.frame.size.height
-                let transform = CGAffineTransform(scaleX: shrinkRatio, y: shrinkRatio)
-                contentSize = leftScrollView.contentSize.applying(transform)
-                contentOffset = leftScrollView.contentOffset.applying(transform)
-                handleBottomContraint.constant = -limit
-            } else if constant > 0 {
-//                let shrinkRatio = zoomedInitialSize.height / leftImageView.frame.size.height
-                contentSize = zoomedInitialSize
-                contentOffset = leftScrollView.contentOffset
+            } else if bottomSpace > minimumSpace {
+                shrinkRatio = minimumHeight / leftScrollView.bounds.size.height
+                handleBottomContraint.constant = -minimumSpace
+            } else if bottomSpace < 0 {
+                shrinkRatio = (self.frame.height - handleBaseView.frame.height) / leftScrollView.bounds.size.height
                 handleBottomContraint.constant = 0
             }
             
+            let transform = CGAffineTransform(scaleX: shrinkRatio, y: shrinkRatio)
+            contentSize = contentSize.applying(transform)
+            contentOffset = leftScrollView.bounds.applying(transform).origin
             contentOffset = CGPoint(x: max(contentOffset.x, 0), y: max(contentOffset.y, 0))
-            
+
             leftScrollView.contentSize = contentSize
             leftScrollView.contentOffset = contentOffset
             rightScrollView.contentSize = contentSize
@@ -177,7 +198,10 @@ class SideBySideImageView: UIView {
         }
     }
     
-    private var triggerScrollView: UIScrollView? = nil
+    private var isLeftDragging: Bool = false
+    private var isLeftZooming: Bool = false
+    private var isRightDragging: Bool = false
+    private var isRightZooming: Bool = false
 }
 
 extension SideBySideImageView: UIScrollViewDelegate {
@@ -191,36 +215,62 @@ extension SideBySideImageView: UIScrollViewDelegate {
     }
     
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        triggerScrollView = scrollView
+        setDragState(targetScrollView: scrollView, state: true)
+    }
+    
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        if decelerate == false {
+            setDragState(targetScrollView: scrollView, state: false)
+        }
+    }
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        setDragState(targetScrollView: scrollView, state: false)
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        if scrollView != triggerScrollView {
-            return
-        }
-        if scrollView == leftScrollView {
-            rightScrollView.contentOffset = leftScrollView.contentOffset
-            rightScrollView.zoomScale = leftScrollView.zoomScale
-        } else if scrollView == rightScrollView {
-            leftScrollView.contentOffset = rightScrollView.contentOffset
-            leftScrollView.zoomScale = rightScrollView.zoomScale
-        }
+        sync(baseLineScrollView: scrollView)
     }
     
     func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
-        triggerScrollView = scrollView
+        setZoomState(targetScrollView: scrollView, state: true)
+    }
+    
+    func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
+        setZoomState(targetScrollView: scrollView, state: false)
     }
     
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
-        if scrollView != triggerScrollView {
-            return
+        sync(baseLineScrollView: scrollView)
+    }
+    
+    private func setDragState(targetScrollView: UIScrollView, state: Bool) {
+        if targetScrollView == leftScrollView {
+            isLeftDragging = state
+        } else if targetScrollView == rightScrollView {
+            isRightDragging = state
         }
-        if scrollView == leftScrollView {
-            rightScrollView.contentOffset = leftScrollView.contentOffset
-            rightScrollView.zoomScale = leftScrollView.zoomScale
-        } else if scrollView == rightScrollView {
-            leftScrollView.contentOffset = rightScrollView.contentOffset
-            leftScrollView.zoomScale = rightScrollView.zoomScale
+    }
+    
+    private func setZoomState(targetScrollView: UIScrollView, state: Bool) {
+        if targetScrollView == leftScrollView {
+            isLeftZooming = state
+        } else if targetScrollView == rightScrollView {
+            isRightZooming = state
+        }
+    }
+    
+    private func sync(baseLineScrollView: UIScrollView) {
+        if baseLineScrollView == leftScrollView {
+            if isLeftDragging || isLeftZooming {
+                rightScrollView.contentOffset = leftScrollView.contentOffset
+                rightScrollView.zoomScale = leftScrollView.zoomScale
+            }
+        } else if baseLineScrollView == rightScrollView {
+            if isRightDragging || isRightZooming {
+                leftScrollView.contentOffset = rightScrollView.contentOffset
+                leftScrollView.zoomScale = rightScrollView.zoomScale
+            }
         }
     }
 }

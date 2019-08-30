@@ -12,22 +12,32 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var sideBySideView: SideBySideImageView!
     
+    let leftImage = #imageLiteral(resourceName: "before_image")
+    let rightImage = #imageLiteral(resourceName: "after_image")
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
-        let leftImage = #imageLiteral(resourceName: "before_image")
-        let rightImage = #imageLiteral(resourceName: "after_image")
-        
         let size = CGSize(width: 411.0 * (leftImage.size.width / leftImage.size.height), height: 411.0)
-        _ = sideBySideView.setImage(left: leftImage, right: rightImage, displaySize: size)
+        _ = sideBySideView.setImage(left: leftImage, right: rightImage, displaySize: size, resetPosition: true)
         
-        sideBySideView.minimumHeight = 200.0
+        //sideBySideView.enableMinimumHeight = true
+        //sideBySideView.minimumHeight = 200.0
     }
 
 
-    @IBAction func buttonTouched(_ sender: Any) {
-        print("fwefw")
+    @IBAction func resetPosTouched(_ sender: Any) {
+        _ = sideBySideView.setImage(left: sideBySideView.leftImage!,
+                                    right: sideBySideView.rightImage!,
+                                    displaySize: sideBySideView.originImageSize, resetPosition: true)
     }
+    
+    @IBAction func keepPosTouched(_ sender: Any) {
+        _ = sideBySideView.setImage(left: sideBySideView.rightImage!,
+                                    right: sideBySideView.leftImage!,
+                                    displaySize: sideBySideView.originImageSize, resetPosition: false)
+    }
+    
 }
 
