@@ -21,7 +21,8 @@ class SideBySideImageView: UIView {
     
     private var handleBottomContraint: NSLayoutConstraint!
     
-    private var displaySize: CGSize = .zero
+    private var initialDisplaySize: CGSize = .zero
+    private var initialContentOffset: CGPoint = .zero
     
     var minimumHeight: CGFloat = 0.0
     
@@ -44,18 +45,18 @@ class SideBySideImageView: UIView {
         
         let scrollViewSize = leftScrollView.frame.size
         
-        self.displaySize = displaySize
+        initialDisplaySize = displaySize
+        initialContentOffset = CGPoint(x: (displaySize.width - scrollViewSize.width) / 2.0, y: (displaySize.height - scrollViewSize.height) / 2.0)
         
         leftImageView.image = left
         leftImageView.frame = CGRect(origin: .zero, size: displaySize)
         rightImageView.image = right
         rightImageView.frame = CGRect(origin: .zero, size: displaySize)
         
-        let center = CGPoint(x: (displaySize.width - scrollViewSize.width) / 2.0, y: (displaySize.height - scrollViewSize.height) / 2.0)
-        leftScrollView.contentSize = displaySize
-        leftScrollView.contentOffset = center
-        rightScrollView.contentSize = displaySize
-        rightScrollView.contentOffset = center
+        leftScrollView.contentSize = self.initialDisplaySize
+        leftScrollView.contentOffset = self.initialContentOffset
+        rightScrollView.contentSize = self.initialDisplaySize
+        rightScrollView.contentOffset = self.initialContentOffset
 
         
         return true
@@ -74,14 +75,14 @@ class SideBySideImageView: UIView {
         leftScrollView.addSubview(leftImageView)
         rightScrollView.addSubview(rightImageView)
         
-        leftScrollView.bounces = false
+//        leftScrollView.bounces = false
         leftScrollView.bouncesZoom = false
         leftScrollView.maximumZoomScale = 3.0
         leftScrollView.showsVerticalScrollIndicator = false
         leftScrollView.showsHorizontalScrollIndicator = false
         leftScrollView.delegate = self
         
-        rightScrollView.bounces = false
+//        rightScrollView.bounces = false
         rightScrollView.bouncesZoom = false
         rightScrollView.maximumZoomScale = 3.0
         rightScrollView.showsVerticalScrollIndicator = false
@@ -136,16 +137,41 @@ class SideBySideImageView: UIView {
             let constant = handleBottomContraint.constant + translation.y
             let limit = self.frame.height - minimumHeight - handleBaseView.frame.height
             
+            let zoomedInitialSize = initialDisplaySize.applying(CGAffineTransform(scaleX: leftScrollView.zoomScale, y: leftScrollView.zoomScale))
+            
+            var contentSize: CGSize = .zero
+            var contentOffset: CGPoint = .zero
+            
             if constant >= -limit && constant <= 0 {
-                let shrinkRatio = (displaySize.height + constant) / displaySize.height
+                let shrinkRatio = (leftImageView.frame.size.height + translation.y) / leftImageView.frame.size.height
+                let transform = CGAffineTransform(scaleX: shrinkRatio, y: shrinkRatio)
+                contentSize = leftScrollView.contentSize.applying(transform)
+                contentOffset = leftScrollView.contentOffset.applying(transform)
+                print("contentSize = \(contentSize)")
                 handleBottomContraint.constant = constant
                 recognizer.setTranslation(.zero, in: self)
             } else if constant < -limit {
+                let shrinkRatio = (zoomedInitialSize.height - limit) / leftImageView.frame.size.height
+                let transform = CGAffineTransform(scaleX: shrinkRatio, y: shrinkRatio)
+                contentSize = leftScrollView.contentSize.applying(transform)
+                contentOffset = leftScrollView.contentOffset.applying(transform)
                 handleBottomContraint.constant = -limit
             } else if constant > 0 {
+//                let shrinkRatio = zoomedInitialSize.height / leftImageView.frame.size.height
+                contentSize = zoomedInitialSize
+                contentOffset = leftScrollView.contentOffset
                 handleBottomContraint.constant = 0
             }
             
+            contentOffset = CGPoint(x: max(contentOffset.x, 0), y: max(contentOffset.y, 0))
+            
+            leftScrollView.contentSize = contentSize
+            leftScrollView.contentOffset = contentOffset
+            rightScrollView.contentSize = contentSize
+            rightScrollView.contentOffset = contentOffset
+            leftImageView.frame.size = contentSize
+            rightImageView.frame.size = contentSize
+
         default:
             break
         }
