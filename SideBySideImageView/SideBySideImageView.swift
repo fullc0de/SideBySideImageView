@@ -176,10 +176,8 @@ class SideBySideImageView: UIView {
                 //
                 recognizer.setTranslation(.zero, in: self)
             } else if bottomSpace > minimumSpace {
-                shrinkRatio = minimumHeight / leftScrollView.bounds.size.height
                 handleBottomContraint.constant = -minimumSpace
             } else if bottomSpace < 0 {
-                shrinkRatio = (self.frame.height - handleBaseView.frame.height) / leftScrollView.bounds.size.height
                 handleBottomContraint.constant = 0
             }
             
