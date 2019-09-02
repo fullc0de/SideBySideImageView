@@ -55,6 +55,14 @@ class SideBySideImageView: UIView {
         initControls()
     }
     
+    /// This method updates two images.
+    /// - Parameters:
+    ///     - left: an image on left side.
+    ///     - right: an image on right side.
+    ///     - displaySize: an initial size of two images.
+    ///     - resetPosition: a flag whether previous position and scaling will be kept or not. if `displaySize` is different from the size previously used, this parameter will be forcely changed to `true`.
+    /// - Returns:
+    ///     - if it returns `false`, it means that invalid parameters have been passed.
     func setImage(left: UIImage, right: UIImage, displaySize: CGSize, resetPosition: Bool) -> Bool {
         if left.size.equalTo(right.size) == false {
             return false
@@ -63,30 +71,31 @@ class SideBySideImageView: UIView {
         layoutIfNeeded()
         
         let isFirstTime = leftImageView.image == nil
+        let isDisplaySizeChanged = initialDisplaySize != displaySize
         
         initialDisplaySize = displaySize
         
         leftImageView.image = left
         rightImageView.image = right
-
-        if resetPosition {
+        
+        if resetPosition || isDisplaySizeChanged {
             handleBottomContraint.constant = 0.0
         }
         
-        if isFirstTime || resetPosition {
+        if isFirstTime || resetPosition || isDisplaySizeChanged {
             let contentOffset = CGPoint(x: (displaySize.width - leftScrollView.frame.width) / 2.0, y: (displaySize.height - leftScrollView.frame.height) / 2.0)
             leftScrollView.zoomScale = 1.0
             leftScrollView.contentOffset = contentOffset
             rightScrollView.zoomScale = 1.0
             rightScrollView.contentOffset = contentOffset
-
+            
             leftScrollView.contentSize = displaySize
             rightScrollView.contentSize = displaySize
             
             leftImageView.frame = CGRect(origin: .zero, size: displaySize)
             rightImageView.frame = CGRect(origin: .zero, size: displaySize)
         }
-
+        
         return true
     }
     
