@@ -25,8 +25,8 @@ class ViewController: UIViewController {
         let size = CGSize(width: 411.0 * (leftImage.size.width / leftImage.size.height), height: 411.0)
         _ = sideBySideView.setImage(left: leftImage, right: rightImage, displaySize: size, resetPosition: true)
         
-        //sideBySideView.enableMinimumHeight = true
-        //sideBySideView.minimumHeight = 200.0
+//        sideBySideView.enableMinimumHeight = true
+//        sideBySideView.minimumHeight = 300.0
     }
 
 

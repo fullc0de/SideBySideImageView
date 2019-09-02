@@ -181,34 +181,39 @@ class SideBySideImageView: UIView {
             let minimumSpace = self.frame.height - minimumHeight - handleBaseView.frame.height
             let bottomSpace = -(handleBottomContraint.constant + delta.y)
             
-            var contentSize: CGSize = leftScrollView.contentSize
-            var contentOffset: CGPoint = leftScrollView.contentOffset
-            var shrinkRatio: CGFloat = 1.0
+            let currentContentSize = leftScrollView.contentSize
+            var newContentSize = leftScrollView.contentSize
+            var newContentOffset = leftScrollView.contentOffset
             
             if bottomSpace <= minimumSpace && bottomSpace >= 0 {
-                shrinkRatio = (leftScrollView.bounds.height + delta.y) / leftScrollView.bounds.height
+                let shrinkScale = (leftScrollView.bounds.height + delta.y) / leftScrollView.bounds.height
+                newContentSize = newContentSize.applying(CGAffineTransform(scaleX: shrinkScale, y: shrinkScale))
                 handleBottomContraint.constant = -(bottomSpace)
-                //
-                // the following code makes `translation` value be delta.
-                //
                 recognizer.setTranslation(.zero, in: self)
+                
             } else if bottomSpace > minimumSpace {
+                let minimumWidth = minimumHeight * (initialDisplaySize.width / initialDisplaySize.height)
+                newContentSize = CGSize(width: minimumWidth, height: minimumHeight)
                 handleBottomContraint.constant = -minimumSpace
+                
             } else if bottomSpace < 0 {
+                let maximumHeight = self.frame.height - handleBaseView.frame.height
+                let maximumWidth = maximumHeight * (initialDisplaySize.width / initialDisplaySize.height)
+                newContentSize = CGSize(width: maximumWidth, height: maximumHeight)
                 handleBottomContraint.constant = 0
             }
             
-            let transform = CGAffineTransform(scaleX: shrinkRatio, y: shrinkRatio)
-            contentSize = contentSize.applying(transform)
-            contentOffset = leftScrollView.bounds.applying(transform).origin
-            contentOffset = CGPoint(x: max(contentOffset.x, 0), y: max(contentOffset.y, 0))
+            let transform = CGAffineTransform(scaleX: newContentSize.width / currentContentSize.width,
+                                              y: newContentSize.height / currentContentSize.height)
+            newContentOffset = leftScrollView.bounds.applying(transform).origin
+            newContentOffset = CGPoint(x: max(newContentOffset.x, 0), y: max(newContentOffset.y, 0))
 
-            leftScrollView.contentSize = contentSize
-            leftScrollView.contentOffset = contentOffset
-            rightScrollView.contentSize = contentSize
-            rightScrollView.contentOffset = contentOffset
-            leftImageView.frame.size = contentSize
-            rightImageView.frame.size = contentSize
+            leftScrollView.contentSize = newContentSize
+            leftScrollView.contentOffset = newContentOffset
+            rightScrollView.contentSize = newContentSize
+            rightScrollView.contentOffset = newContentOffset
+            leftImageView.frame.size = newContentSize
+            rightImageView.frame.size = newContentSize
 
         default:
             break
