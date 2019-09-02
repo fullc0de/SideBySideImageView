@@ -64,16 +64,29 @@
                                     <action selector="toggleSpaceTouched:" destination="BYZ-38-t0r" eventType="touchUpInside" id="yij-Ju-Yqg"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Tb-wx-nqd">
+                                <rect key="frame" x="309" y="35" width="35" height="35"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="35" id="4qY-qm-UWU"/>
+                                    <constraint firstAttribute="height" constant="35" id="u3h-Kt-1yt"/>
+                                </constraints>
+                                <state key="normal" title="Take"/>
+                                <connections>
+                                    <action selector="takeTouched:" destination="BYZ-38-t0r" eventType="touchUpInside" id="eTR-OI-I0k"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="0.81990500369999997" green="0.96017095929999996" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="Nhy-pq-H6j" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="5Iz-JK-h7s"/>
+                            <constraint firstItem="vRc-Eu-nHC" firstAttribute="top" secondItem="9Tb-wx-nqd" secondAttribute="bottom" constant="18.5" id="5ab-l4-ZIy"/>
                             <constraint firstItem="vRc-Eu-nHC" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Eox-AF-7f0"/>
                             <constraint firstItem="vRc-Eu-nHC" firstAttribute="top" secondItem="Nba-MU-uwK" secondAttribute="bottom" constant="18.5" id="Hb3-GI-b6h"/>
                             <constraint firstItem="vRc-Eu-nHC" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" constant="-24.5" id="Pvv-8Y-Wml"/>
                             <constraint firstItem="Nba-MU-uwK" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="aWv-2U-xwX"/>
                             <constraint firstItem="Nhy-pq-H6j" firstAttribute="top" secondItem="vRc-Eu-nHC" secondAttribute="bottom" constant="24.5" id="aZD-Qp-ZfA"/>
                             <constraint firstItem="ORa-Of-KDz" firstAttribute="top" secondItem="vRc-Eu-nHC" secondAttribute="bottom" constant="53.5" id="gY4-gg-KKM"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="9Tb-wx-nqd" secondAttribute="trailing" constant="31" id="hXV-y2-DAo"/>
                             <constraint firstItem="clu-Ug-TPC" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" constant="-68" id="nhO-pK-Ua7"/>
                             <constraint firstItem="vRc-Eu-nHC" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="qIi-4T-T9B"/>
                             <constraint firstItem="ORa-Of-KDz" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" constant="53" id="riO-VO-Svd"/>

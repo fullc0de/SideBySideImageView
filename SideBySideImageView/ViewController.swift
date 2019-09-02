@@ -21,6 +21,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        sideBySideView.backgroundColor = .white
         
         let size = CGSize(width: 411.0 * (leftImage.size.width / leftImage.size.height), height: 411.0)
         _ = sideBySideView.setImage(left: leftImage, right: rightImage, displaySize: size, resetPosition: true)
@@ -46,6 +47,11 @@ class ViewController: UIViewController {
         sideBySideView.separatorSpace = sideBySideView.separatorSpace == 0.0 ? 3.0 : 0.0
     }
     
+    @IBAction func takeTouched(_ sender: Any) {
+        if let image = sideBySideView.snapshot() {
+            print("image = \(image)")
+        }
+    }
     
 }
 

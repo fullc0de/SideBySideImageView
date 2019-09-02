@@ -22,7 +22,7 @@ class SideBySideImageView: UIView {
     private var handleBottomContraint: NSLayoutConstraint!
     
     private var initialDisplaySize: CGSize = .zero
-    
+ 
     /// if this property is false, the view calculates the minimum height of a visible area automatically when the handle is moved for shrinking images.
     /// if the property is true, `minimumHeight` become available with this purpose. Default value is false.
     var enableMinimumHeight: Bool = false
@@ -107,13 +107,43 @@ class SideBySideImageView: UIView {
         return true
     }
     
+    /// This method creates snapshot image which is scaled relavant to original scale factor.
+    /// - Returns:
+    ///   a snapshot image with the separator. if it returns `nil`, that indicates an error occurs during cropping.
+    func snapshot() -> UIImage? {
+        guard let leftImage = leftImageView.image, let rightImage = rightImageView.image else { return nil }
+        
+        let scale = leftImageView.image!.size.width / leftImageView.frame.size.width
+        let transform = CGAffineTransform(scaleX: scale, y: scale)
+        let validRect = leftScrollView.bounds.applying(transform)
+        
+        guard let leftCGImage = leftImage.cgImage?.cropping(to: validRect), let rightCGImage = rightImage.cgImage?.cropping(to: validRect) else { return nil }
+        
+        let leftCropped = UIImage(cgImage: leftCGImage)
+        let rightCropped = UIImage(cgImage: rightCGImage)
+        
+        let outImageSize = CGSize(width: floor(validRect.width * 2 + separatorSpace), height: floor(validRect.height))
+        
+        let baseView = UIView(frame: CGRect(origin: .zero, size: outImageSize))
+        baseView.backgroundColor = .white
+        let tempStack = UIStackView(arrangedSubviews: [UIImageView(image: leftCropped), UIImageView(image: rightCropped)])
+        tempStack.frame = baseView.bounds
+        tempStack.axis = .horizontal
+        tempStack.distribution = .fillEqually
+        tempStack.spacing = separatorSpace
+        baseView.addSubview(tempStack)
+        baseView.layoutIfNeeded()
+        
+        return baseView.toImage()
+    }
+    
     override func layoutSubviews() {
         super.layoutSubviews()
         
     }
     
     private func initControls() {
-        
+
         leftImageView.contentMode = .scaleAspectFit
         rightImageView.contentMode = .scaleAspectFit
         
@@ -294,5 +324,14 @@ extension SideBySideImageView: UIScrollViewDelegate {
                 leftScrollView.zoomScale = rightScrollView.zoomScale
             }
         }
+    }
+}
+
+extension UIView {
+    func toImage() -> UIImage? {
+        UIGraphicsBeginImageContextWithOptions(bounds.size, isOpaque, 0.0)
+        defer { UIGraphicsEndImageContext() }
+        drawHierarchy(in: bounds, afterScreenUpdates: true)
+        return UIGraphicsGetImageFromCurrentImageContext()
     }
 }
