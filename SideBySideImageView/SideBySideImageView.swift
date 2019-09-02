@@ -63,27 +63,29 @@ class SideBySideImageView: UIView {
         layoutIfNeeded()
         
         let isFirstTime = leftImageView.image == nil
-        let scrollViewSize = leftScrollView.frame.size
+        
         initialDisplaySize = displaySize
         
         leftImageView.image = left
         rightImageView.image = right
+
+        if resetPosition {
+            handleBottomContraint.constant = 0.0
+        }
         
-        if resetPosition || isFirstTime {
-            let contentOffset = CGPoint(x: (displaySize.width - scrollViewSize.width) / 2.0, y: (displaySize.height - scrollViewSize.height) / 2.0)
+        if isFirstTime || resetPosition {
+            let contentOffset = CGPoint(x: (displaySize.width - leftScrollView.frame.width) / 2.0, y: (displaySize.height - leftScrollView.frame.height) / 2.0)
             leftScrollView.zoomScale = 1.0
             leftScrollView.contentOffset = contentOffset
             rightScrollView.zoomScale = 1.0
             rightScrollView.contentOffset = contentOffset
-        }
-        
-        let contentSize = displaySize.applying(CGAffineTransform(scaleX: leftScrollView.zoomScale, y: leftScrollView.zoomScale))
-        
-        leftScrollView.contentSize = contentSize
-        rightScrollView.contentSize = contentSize
 
-        leftImageView.frame = CGRect(origin: .zero, size: contentSize)
-        rightImageView.frame = CGRect(origin: .zero, size: contentSize)
+            leftScrollView.contentSize = displaySize
+            rightScrollView.contentSize = displaySize
+            
+            leftImageView.frame = CGRect(origin: .zero, size: displaySize)
+            rightImageView.frame = CGRect(origin: .zero, size: displaySize)
+        }
 
         return true
     }
