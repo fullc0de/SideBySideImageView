@@ -12,8 +12,11 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var sideBySideView: SideBySideImageView!
     
-    let leftImage = #imageLiteral(resourceName: "before_image")
-    let rightImage = #imageLiteral(resourceName: "after_image")
+//    let leftImage = #imageLiteral(resourceName: "before_image_port")
+//    let rightImage = #imageLiteral(resourceName: "after_image_port")
+
+    let leftImage = #imageLiteral(resourceName: "before_image_land")
+    let rightImage = #imageLiteral(resourceName: "after_image_land")
 
     override func viewDidLoad() {
         super.viewDidLoad()
