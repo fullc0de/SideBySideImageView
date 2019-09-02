@@ -45,6 +45,14 @@ class SideBySideImageView: UIView {
         return initialDisplaySize
     }
     
+    var separatorSpace: CGFloat = 3.0 {
+        didSet {
+            if stackView != nil {
+                stackView.spacing = separatorSpace
+            }
+        }
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         initControls()

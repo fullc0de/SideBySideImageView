@@ -42,5 +42,10 @@ class ViewController: UIViewController {
                                     displaySize: sideBySideView.originImageSize, resetPosition: false)
     }
     
+    @IBAction func toggleSpaceTouched(_ sender: Any) {
+        sideBySideView.separatorSpace = sideBySideView.separatorSpace == 0.0 ? 3.0 : 0.0
+    }
+    
+    
 }
 
