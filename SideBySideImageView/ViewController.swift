@@ -48,7 +48,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction func takeTouched(_ sender: Any) {
-        if let image = sideBySideView.snapshot() {
+        if let image = sideBySideView.snapshot(boundSize: CGSize(width: 1024, height: 1024)) {
             print("image = \(image)")
         }
     }

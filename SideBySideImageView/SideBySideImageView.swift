@@ -108,9 +108,11 @@ class SideBySideImageView: UIView {
     }
     
     /// This method creates snapshot image which is scaled relavant to original scale factor.
+    /// - Parameters:
+    ///     - boundSize: a bound used for fitting the output image in it. `.zero` means not to use it.
     /// - Returns:
     ///   a snapshot image with the separator. if it returns `nil`, that indicates an error occurs during cropping.
-    func snapshot() -> UIImage? {
+    func snapshot(boundSize: CGSize = .zero) -> UIImage? {
         guard let leftImage = leftImageView.image, let rightImage = rightImageView.image else { return nil }
         
         let scale = leftImageView.image!.size.width / leftImageView.frame.size.width
@@ -127,14 +129,23 @@ class SideBySideImageView: UIView {
         let baseView = UIView(frame: CGRect(origin: .zero, size: outImageSize))
         baseView.backgroundColor = .white
         let tempStack = UIStackView(arrangedSubviews: [UIImageView(image: leftCropped), UIImageView(image: rightCropped)])
+        tempStack.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         tempStack.frame = baseView.bounds
         tempStack.axis = .horizontal
         tempStack.distribution = .fillEqually
         tempStack.spacing = separatorSpace
         baseView.addSubview(tempStack)
+        
+        if boundSize != .zero {
+            let scale = min(boundSize.width / baseView.bounds.width, boundSize.height / baseView.bounds.height)
+            baseView.frame = CGRect(origin: .zero, size: CGSize(width: floor(baseView.bounds.width * scale), height: floor(baseView.bounds.height * scale)))
+        }
         baseView.layoutIfNeeded()
         
-        return baseView.toImage()
+        UIGraphicsBeginImageContextWithOptions(baseView.frame.size, baseView.isOpaque, 0.0)
+        defer { UIGraphicsEndImageContext() }
+        baseView.drawHierarchy(in: baseView.frame, afterScreenUpdates: true)
+        return UIGraphicsGetImageFromCurrentImageContext()
     }
     
     override func layoutSubviews() {
@@ -324,14 +335,5 @@ extension SideBySideImageView: UIScrollViewDelegate {
                 leftScrollView.zoomScale = rightScrollView.zoomScale
             }
         }
-    }
-}
-
-extension UIView {
-    func toImage() -> UIImage? {
-        UIGraphicsBeginImageContextWithOptions(bounds.size, isOpaque, 0.0)
-        defer { UIGraphicsEndImageContext() }
-        drawHierarchy(in: bounds, afterScreenUpdates: true)
-        return UIGraphicsGetImageFromCurrentImageContext()
     }
 }
