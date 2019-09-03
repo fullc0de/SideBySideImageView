@@ -9,7 +9,7 @@
 import UIKit
 
 class SideBySideImageView: UIView {
-
+    
     private var leftImageView = UIImageView()
     private var rightImageView = UIImageView()
     private var leftScrollView = UIScrollView()
@@ -22,7 +22,7 @@ class SideBySideImageView: UIView {
     private var handleBottomContraint: NSLayoutConstraint!
     
     private var initialDisplaySize: CGSize = .zero
- 
+    
     /// if this property is false, the view calculates the minimum height of a visible area automatically when the handle is moved for shrinking images.
     /// if the property is true, `minimumHeight` become available with this purpose. Default value is false.
     var enableMinimumHeight: Bool = false
@@ -151,10 +151,10 @@ class SideBySideImageView: UIView {
             if let context = UIGraphicsGetCurrentContext() {
                 context.setFillColor(UIColor.white.cgColor)
                 context.fill(CGRect(origin: .zero, size: outImageSize))
-                let leftWidth = CGFloat(leftCGImage.width) * scale
-                let rightWidth = CGFloat(rightCGImage.width) * scale
+                let leftWidth = floor(validRect.width) * scale
+                let rightWidth = floor(validRect.width) * scale
                 leftCropped.draw(in: CGRect(x: 0, y: 0, width: Int(leftWidth), height: Int(outImageSize.height)))
-                rightCropped.draw(in: CGRect(x: Int(outImageSize.width - rightWidth), y: 0, width: Int(rightWidth), height: Int(outImageSize.height)))
+                rightCropped.draw(in: CGRect(x: Int(outImageSize.width) - Int(rightWidth), y: 0, width: Int(rightWidth), height: Int(outImageSize.height)))
                 
                 let output = UIGraphicsGetImageFromCurrentImageContext()
                 DispatchQueue.main.async {
@@ -174,7 +174,7 @@ class SideBySideImageView: UIView {
     }
     
     private func initControls() {
-
+        
         leftImageView.contentMode = .scaleAspectFit
         rightImageView.contentMode = .scaleAspectFit
         
@@ -201,7 +201,7 @@ class SideBySideImageView: UIView {
             stackView.distribution = .fillEqually
             stackView.spacing = 3.0
             addSubview(stackView)
-        
+            
             addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|-0-[stack]-0-|", options: [], metrics: nil, views: ["stack": stackView]))
             addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-0-[stack]", options: [], metrics: nil, views: ["stack": stackView]))
             
@@ -215,7 +215,7 @@ class SideBySideImageView: UIView {
             addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|-0-[view]-0-|", options: [], metrics: nil, views: ["view": view]))
             addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-(>=0)-[view]", options: [], metrics: nil, views: ["view": view]))
             addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:[stack]-0-[view(30)]-(>=0)-|", options: [], metrics: nil, views: ["view": view, "stack": stackView!]))
-
+            
             handleBottomContraint = NSLayoutConstraint(item: view, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1.0, constant: 0.0)
             addConstraint(handleBottomContraint)
             
@@ -233,7 +233,7 @@ class SideBySideImageView: UIView {
         let gesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(recognizer:)))
         handleBaseView.addGestureRecognizer(gesture)
     }
-
+    
     @objc func handlePanGesture(recognizer: UIPanGestureRecognizer) {
         switch recognizer.state {
         case .changed:
@@ -268,14 +268,14 @@ class SideBySideImageView: UIView {
                                               y: newContentSize.height / currentContentSize.height)
             newContentOffset = leftScrollView.bounds.applying(transform).origin
             newContentOffset = CGPoint(x: max(newContentOffset.x, 0), y: max(newContentOffset.y, 0))
-
+            
             leftScrollView.contentSize = newContentSize
             leftScrollView.contentOffset = newContentOffset
             rightScrollView.contentSize = newContentSize
             rightScrollView.contentOffset = newContentOffset
             leftImageView.frame.size = newContentSize
             rightImageView.frame.size = newContentSize
-
+            
         default:
             break
         }
