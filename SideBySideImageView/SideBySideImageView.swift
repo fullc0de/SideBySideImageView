@@ -254,13 +254,15 @@ class SideBySideImageView: UIView {
                 
             } else if bottomSpace > minimumSpace {
                 let minimumWidth = minimumHeight * (initialDisplaySize.width / initialDisplaySize.height)
-                newContentSize = CGSize(width: minimumWidth, height: minimumHeight)
+                let transform = CGAffineTransform(scaleX: leftScrollView.zoomScale, y: leftScrollView.zoomScale)
+                newContentSize = CGSize(width: minimumWidth, height: minimumHeight).applying(transform)
                 handleBottomContraint.constant = -minimumSpace
                 
             } else if bottomSpace < 0 {
                 let maximumHeight = self.frame.height - handleBaseView.frame.height
                 let maximumWidth = maximumHeight * (initialDisplaySize.width / initialDisplaySize.height)
-                newContentSize = CGSize(width: maximumWidth, height: maximumHeight)
+                let transform = CGAffineTransform(scaleX: leftScrollView.zoomScale, y: leftScrollView.zoomScale)
+                newContentSize = CGSize(width: maximumWidth, height: maximumHeight).applying(transform)
                 handleBottomContraint.constant = 0
             }
             
