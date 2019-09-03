@@ -12,6 +12,8 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var sideBySideView: SideBySideImageView!
     
+    @IBOutlet weak var preview: UIImageView!
+    
 //    let leftImage = #imageLiteral(resourceName: "before_image_port")
 //    let rightImage = #imageLiteral(resourceName: "after_image_port")
 
@@ -48,8 +50,11 @@ class ViewController: UIViewController {
     }
     
     @IBAction func takeTouched(_ sender: Any) {
-        if let image = sideBySideView.snapshot(boundSize: CGSize(width: 1024, height: 1024)) {
-            print("image = \(image)")
+        sideBySideView.snapshot(boundSize: CGSize(width: 1024, height: 1024)) { image in
+            if let image = image {
+                print("image = \(image)")
+                self.preview.image = image
+            }
         }
     }
     

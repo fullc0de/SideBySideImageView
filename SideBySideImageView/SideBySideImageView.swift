@@ -110,42 +110,62 @@ class SideBySideImageView: UIView {
     /// This method creates snapshot image which is scaled relavant to original scale factor.
     /// - Parameters:
     ///     - boundSize: a bound used for fitting the output image in it. `.zero` means not to use it.
+    ///     - completionHandler: This is called when processing has been finished
     /// - Returns:
     ///   a snapshot image with the separator. if it returns `nil`, that indicates an error occurs during cropping.
-    func snapshot(boundSize: CGSize = .zero) -> UIImage? {
-        guard let leftImage = leftImageView.image, let rightImage = rightImageView.image else { return nil }
+    func snapshot(boundSize: CGSize = .zero, completionHandler: @escaping (UIImage?) -> Void) {
+        guard let leftImage = leftImageView.image, let rightImage = rightImageView.image else {
+            completionHandler(nil)
+            return
+        }
         
         let scale = leftImageView.image!.size.width / leftImageView.frame.size.width
         let transform = CGAffineTransform(scaleX: scale, y: scale)
         let validRect = leftScrollView.bounds.applying(transform)
         
-        guard let leftCGImage = leftImage.cgImage?.cropping(to: validRect), let rightCGImage = rightImage.cgImage?.cropping(to: validRect) else { return nil }
-        
-        let leftCropped = UIImage(cgImage: leftCGImage)
-        let rightCropped = UIImage(cgImage: rightCGImage)
-        
-        let outImageSize = CGSize(width: floor(validRect.width * 2 + separatorSpace), height: floor(validRect.height))
-        
-        let baseView = UIView(frame: CGRect(origin: .zero, size: outImageSize))
-        baseView.backgroundColor = .white
-        let tempStack = UIStackView(arrangedSubviews: [UIImageView(image: leftCropped), UIImageView(image: rightCropped)])
-        tempStack.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        tempStack.frame = baseView.bounds
-        tempStack.axis = .horizontal
-        tempStack.distribution = .fillEqually
-        tempStack.spacing = separatorSpace
-        baseView.addSubview(tempStack)
-        
-        if boundSize != .zero {
-            let scale = min(boundSize.width / baseView.bounds.width, boundSize.height / baseView.bounds.height)
-            baseView.frame = CGRect(origin: .zero, size: CGSize(width: floor(baseView.bounds.width * scale), height: floor(baseView.bounds.height * scale)))
+        let space = separatorSpace
+        DispatchQueue.global(qos: .background).async {
+            guard let leftCGImage = leftImage.cgImage?.cropping(to: validRect), let rightCGImage = rightImage.cgImage?.cropping(to: validRect) else {
+                DispatchQueue.main.async {
+                    completionHandler(nil)
+                }
+                return
+            }
+            
+            let leftCropped = UIImage(cgImage: leftCGImage)
+            let rightCropped = UIImage(cgImage: rightCGImage)
+            
+            var outImageSize = CGSize(width: validRect.width * 2 + space, height: validRect.height)
+            var scale: CGFloat = 1.0
+            if boundSize != .zero {
+                scale = min(boundSize.width / outImageSize.width, boundSize.height / outImageSize.height)
+                outImageSize = outImageSize.applying(CGAffineTransform(scaleX: scale, y: scale))
+            }
+            
+            outImageSize.width = floor(outImageSize.width)
+            outImageSize.height = floor(outImageSize.height)
+            
+            UIGraphicsBeginImageContextWithOptions(outImageSize, true, 0.0)
+            defer { UIGraphicsEndImageContext() }
+            
+            if let context = UIGraphicsGetCurrentContext() {
+                context.setFillColor(UIColor.white.cgColor)
+                context.fill(CGRect(origin: .zero, size: outImageSize))
+                let leftWidth = CGFloat(leftCGImage.width) * scale
+                let rightWidth = CGFloat(rightCGImage.width) * scale
+                leftCropped.draw(in: CGRect(x: 0, y: 0, width: Int(leftWidth), height: Int(outImageSize.height)))
+                rightCropped.draw(in: CGRect(x: Int(outImageSize.width - rightWidth), y: 0, width: Int(rightWidth), height: Int(outImageSize.height)))
+                
+                let output = UIGraphicsGetImageFromCurrentImageContext()
+                DispatchQueue.main.async {
+                    completionHandler(output)
+                }
+            } else {
+                DispatchQueue.main.async {
+                    completionHandler(nil)
+                }
+            }
         }
-        baseView.layoutIfNeeded()
-        
-        UIGraphicsBeginImageContextWithOptions(baseView.frame.size, baseView.isOpaque, 0.0)
-        defer { UIGraphicsEndImageContext() }
-        baseView.drawHierarchy(in: baseView.frame, afterScreenUpdates: true)
-        return UIGraphicsGetImageFromCurrentImageContext()
     }
     
     override func layoutSubviews() {

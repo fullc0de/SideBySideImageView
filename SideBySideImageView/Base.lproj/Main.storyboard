@@ -75,6 +75,13 @@
                                     <action selector="takeTouched:" destination="BYZ-38-t0r" eventType="touchUpInside" id="eTR-OI-I0k"/>
                                 </connections>
                             </button>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="S2W-D2-c0H">
+                                <rect key="frame" x="280" y="606" width="80" height="56"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="80" id="HRa-8O-j5a"/>
+                                    <constraint firstAttribute="height" constant="56" id="Jap-Wv-c7j"/>
+                                </constraints>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" red="0.81990500369999997" green="0.96017095929999996" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
@@ -82,7 +89,9 @@
                             <constraint firstItem="vRc-Eu-nHC" firstAttribute="top" secondItem="9Tb-wx-nqd" secondAttribute="bottom" constant="18.5" id="5ab-l4-ZIy"/>
                             <constraint firstItem="vRc-Eu-nHC" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Eox-AF-7f0"/>
                             <constraint firstItem="vRc-Eu-nHC" firstAttribute="top" secondItem="Nba-MU-uwK" secondAttribute="bottom" constant="18.5" id="Hb3-GI-b6h"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="S2W-D2-c0H" secondAttribute="bottom" constant="5" id="O7q-wC-ZdM"/>
                             <constraint firstItem="vRc-Eu-nHC" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" constant="-24.5" id="Pvv-8Y-Wml"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="S2W-D2-c0H" secondAttribute="trailing" constant="15" id="Q8O-iN-nCq"/>
                             <constraint firstItem="Nba-MU-uwK" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="aWv-2U-xwX"/>
                             <constraint firstItem="Nhy-pq-H6j" firstAttribute="top" secondItem="vRc-Eu-nHC" secondAttribute="bottom" constant="24.5" id="aZD-Qp-ZfA"/>
                             <constraint firstItem="ORa-Of-KDz" firstAttribute="top" secondItem="vRc-Eu-nHC" secondAttribute="bottom" constant="53.5" id="gY4-gg-KKM"/>
@@ -96,6 +105,7 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="preview" destination="S2W-D2-c0H" id="8li-Sk-XgN"/>
                         <outlet property="sideBySideView" destination="vRc-Eu-nHC" id="IBx-ak-vwj"/>
                     </connections>
                 </viewController>
