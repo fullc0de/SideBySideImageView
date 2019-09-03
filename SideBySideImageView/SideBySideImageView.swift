@@ -135,14 +135,14 @@ class SideBySideImageView: UIView {
             let leftCropped = UIImage(cgImage: leftCGImage)
             let rightCropped = UIImage(cgImage: rightCGImage)
             
-            var outImageSize = CGSize(width: validRect.width * 2 + space, height: validRect.height)
+            var outImageSize = CGSize(width: validRect.width * 2, height: validRect.height)
             var scale: CGFloat = 1.0
             if boundSize != .zero {
                 scale = min(boundSize.width / outImageSize.width, boundSize.height / outImageSize.height)
                 outImageSize = outImageSize.applying(CGAffineTransform(scaleX: scale, y: scale))
             }
             
-            outImageSize.width = floor(outImageSize.width)
+            outImageSize.width = floor(outImageSize.width) + space
             outImageSize.height = floor(outImageSize.height)
             
             UIGraphicsBeginImageContextWithOptions(outImageSize, true, 0.0)
